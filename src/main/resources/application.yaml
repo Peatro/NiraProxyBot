@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: NiraProxyBot
+    best-proxies-limit: 3
+
+telegram:
+  bot:
+    username: NiraProxyBot
+    token: ${TELEGRAM_BOT_TOKEN:}
+    admin-chat-id: -1003732487362
+    channel-chat-id: -1003805182766
+    allowed-admin-ids: "239924292"
+
+app:
+  site-url: https://mtproxycheck.ru
+  channel-url: https://t.me/mtproxycheck
+  chat-url: https://t.me/mtproxycheck_chat
+  proxy-api-url: https://mtproxycheck.ru/api/public/proxies/best-links
+
+autopost:
+  enabled: true
+  dry-run: true
+  fetch-limit: 3
+  check-cron: "0 0 */8  * * *"
+  max-posts-per-day: 2
+  notify-admin-on-post: true
+  notify-admin-on-error: true
