@@ -25,3 +25,37 @@ autopost:
   max-posts-per-day: 2
   notify-admin-on-post: true
   notify-admin-on-error: true
+
+moderation:
+  enabled: true
+  notify-admin-chat: true
+  delete-obvious-spam: false
+  duplicate:
+    flag-threshold: 2
+    delete-threshold: 3
+    window-seconds: 120
+  links:
+    flag-threshold: 3
+    delete-threshold: 5
+    allowed-domains:
+      - mtproxycheck.ru
+      - t.me
+    allowed-schemes:
+      - tg
+  symbol-spam:
+    enabled: true
+    repeated-char-threshold: 12
+    emoji-threshold: 10
+  keyword-spam:
+    enabled: true
+    keywords:
+      - казино
+      - ставки
+      - крипта
+      - заработок
+      - доход
+      - выплаты
+      - пиши в лс
+  suspicious-long-message:
+    enabled: true
+    min-length: 300
