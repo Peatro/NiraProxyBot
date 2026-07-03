@@ -7,19 +7,19 @@ telegram:
   bot:
     username: NiraProxyBot
     token: ${TELEGRAM_BOT_TOKEN:}
-    admin-chat-id: -1003732487362
-    channel-chat-id: -1003805182766
-    allowed-admin-ids: "239924292"
+    admin-chat-id: ${TELEGRAM_ADMIN_CHAT_ID}
+    channel-chat-id: ${TELEGRAM_CHANNEL_CHAT_ID}
+    allowed-admin-ids: ${TELEGRAM_ALLOWED_ADMIN_IDS}
 
 app:
   site-url: https://mtproxycheck.ru
   channel-url: https://t.me/mtproxycheck
   chat-url: https://t.me/mtproxycheck_chat
-  proxy-api-url: https://mtproxycheck.ru/api/public/proxies/best-links
+  proxy-api-url: ${PROXY_API_URL:https://mtproxycheck.ru/api/public/proxies/best-links}
 
 autopost:
   enabled: true
-  dry-run: true
+  dry-run: false
   fetch-limit: 3
   check-cron: "0 0 */8  * * *"
   max-posts-per-day: 2
