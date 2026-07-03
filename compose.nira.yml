@@ -1,0 +1,11 @@
+services:
+  nira:
+    image: ghcr.io/peatro/niraproxybot:latest
+    container_name: nira
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - mtproxycheck_net
+networks:
+  mtproxycheck_net:
+    external: true

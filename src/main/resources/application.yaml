@@ -7,21 +7,55 @@ telegram:
   bot:
     username: NiraProxyBot
     token: ${TELEGRAM_BOT_TOKEN:}
-    admin-chat-id: -1003732487362
-    channel-chat-id: -1003805182766
-    allowed-admin-ids: "239924292"
+    admin-chat-id: ${TELEGRAM_ADMIN_CHAT_ID}
+    channel-chat-id: ${TELEGRAM_CHANNEL_CHAT_ID}
+    allowed-admin-ids: ${TELEGRAM_ALLOWED_ADMIN_IDS}
 
 app:
   site-url: https://mtproxycheck.ru
   channel-url: https://t.me/mtproxycheck
   chat-url: https://t.me/mtproxycheck_chat
-  proxy-api-url: https://mtproxycheck.ru/api/public/proxies/best-links
+  proxy-api-url: ${PROXY_API_URL:https://mtproxycheck.ru/api/public/proxies/best-links}
 
 autopost:
   enabled: true
-  dry-run: true
+  dry-run: false
   fetch-limit: 3
   check-cron: "0 0 */8  * * *"
   max-posts-per-day: 2
   notify-admin-on-post: true
   notify-admin-on-error: true
+
+moderation:
+  enabled: true
+  notify-admin-chat: true
+  delete-obvious-spam: false
+  duplicate:
+    flag-threshold: 2
+    delete-threshold: 3
+    window-seconds: 120
+  links:
+    flag-threshold: 3
+    delete-threshold: 5
+    allowed-domains:
+      - mtproxycheck.ru
+      - t.me
+    allowed-schemes:
+      - tg
+  symbol-spam:
+    enabled: true
+    repeated-char-threshold: 12
+    emoji-threshold: 10
+  keyword-spam:
+    enabled: true
+    keywords:
+      - казино
+      - ставки
+      - крипта
+      - заработок
+      - доход
+      - выплаты
+      - пиши в лс
+  suspicious-long-message:
+    enabled: true
+    min-length: 300
