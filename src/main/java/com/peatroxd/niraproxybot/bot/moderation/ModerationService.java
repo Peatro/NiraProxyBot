@@ -5,7 +5,7 @@ import com.peatroxd.niraproxybot.bot.moderation.decision.ModerationResult;
 import com.peatroxd.niraproxybot.service.AdminAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.time.Clock;

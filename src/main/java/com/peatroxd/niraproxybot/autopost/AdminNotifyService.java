@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.LinkPreviewOptions;
 
 @Slf4j
 @Service
@@ -26,7 +27,7 @@ public class AdminNotifyService {
             SendMessage message = new SendMessage(adminChatId, text);
             if (parseMode != null) {
                 message.setParseMode(parseMode);
-                message.disableWebPagePreview();
+                message.setLinkPreviewOptions(LinkPreviewOptions.builder().isDisabled(true).build());
             }
             bot.execute(message);
         } catch (Exception e) {

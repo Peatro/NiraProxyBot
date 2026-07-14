@@ -17,25 +17,21 @@ public class MessageFactory {
     private String chatUrl;
 
     public SendMessage start(Long chatId) {
-        SendMessage msg = new SendMessage();
-        msg.setChatId(chatId.toString());
-        msg.setText("""
+        SendMessage msg = new SendMessage(chatId.toString(), """
                 Нира на связи.
-                
+
                 Нужен быстрый доступ к Telegram?
                 Я уже подобрала рабочие прокси — можно зайти в один клик.
-                
+
                 Выбирай:
-                
+
                 Если что-то не открылось — напиши, посмотрю.""");
         msg.setReplyMarkup(KeyboardFactory.mainMenu(siteUrl, channelUrl, chatUrl));
         return msg;
     }
 
     public SendMessage bugCategories(Long chatId) {
-        SendMessage msg = new SendMessage();
-        msg.setChatId(chatId.toString());
-        msg.setText("Что именно не работает?");
+        SendMessage msg = new SendMessage(chatId.toString(), "Что именно не работает?");
         msg.setReplyMarkup(KeyboardFactory.bugCategories());
         return msg;
     }

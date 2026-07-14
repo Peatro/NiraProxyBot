@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.LinkPreviewOptions;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class ChannelPostingService {
     public SendMessage htmlMessage(String chatId, String text) {
         SendMessage message = new SendMessage(chatId, text);
         message.setParseMode("HTML");
-        message.disableWebPagePreview();
+        message.setLinkPreviewOptions(LinkPreviewOptions.builder().isDisabled(true).build());
         return message;
     }
 }
