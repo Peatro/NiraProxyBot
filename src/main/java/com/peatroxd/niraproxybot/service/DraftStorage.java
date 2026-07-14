@@ -8,13 +8,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class DraftStorage {
 
-    private final Map<Long, String> drafts = new ConcurrentHashMap<>();
+    private final Map<Long, ChannelPost> drafts = new ConcurrentHashMap<>();
 
-    public void save(Long userId, String text) {
-        drafts.put(userId, text);
+    public void save(Long userId, ChannelPost post) {
+        drafts.put(userId, post);
     }
 
-    public String get(Long userId) {
+    public ChannelPost get(Long userId) {
         return drafts.get(userId);
     }
 

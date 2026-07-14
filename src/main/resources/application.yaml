@@ -12,6 +12,7 @@ telegram:
     allowed-admin-ids: ${TELEGRAM_ALLOWED_ADMIN_IDS}
 
 app:
+  donate-url: https://t.me/tribute/app?startapp=dNaO
   site-url: https://mtproxycheck.ru
   channel-url: https://t.me/mtproxycheck
   chat-url: https://t.me/mtproxycheck_chat

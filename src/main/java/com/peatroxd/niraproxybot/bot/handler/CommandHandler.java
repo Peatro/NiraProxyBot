@@ -4,6 +4,7 @@ import com.peatroxd.niraproxybot.bot.NiraBot;
 import com.peatroxd.niraproxybot.bot.factory.KeyboardFactory;
 import com.peatroxd.niraproxybot.bot.factory.MessageFactory;
 import com.peatroxd.niraproxybot.service.AdminAccessService;
+import com.peatroxd.niraproxybot.service.ChannelPost;
 import com.peatroxd.niraproxybot.service.ChannelPostingService;
 import com.peatroxd.niraproxybot.service.DraftStorage;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,7 @@ public class CommandHandler {
                     send(bot, messageFactory.simple(chatId, "Нет."));
                     return;
                 }
-                String draft = channelPostingService.buildDraft(proxyLimit);
+                ChannelPost draft = channelPostingService.buildDraft(proxyLimit);
                 draftStorage.save(userId, draft);
 
                 SendMessage msg = channelPostingService.htmlMessage(chatId.toString(), draft);

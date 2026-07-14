@@ -3,6 +3,7 @@ package com.peatroxd.niraproxybot.autopost;
 import com.peatroxd.niraproxybot.bot.NiraBot;
 import com.peatroxd.niraproxybot.client.ProxyApiClient;
 import com.peatroxd.niraproxybot.dto.ProxyTelegramLinkDto;
+import com.peatroxd.niraproxybot.service.ChannelPost;
 import com.peatroxd.niraproxybot.service.ChannelPostFormatter;
 import com.peatroxd.niraproxybot.service.ChannelPostingService;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,7 @@ public class AutoPostService {
                 );
             }
 
-            String text = formatter.format(links);
+            ChannelPost post = formatter.format(links);
             if (properties.dryRun()) {
                 if (properties.notifyAdminOnPost()) {
                     adminNotifyService.notifyHtml(bot, """
@@ -63,12 +64,12 @@ public class AutoPostService {
                             Был бы опубликован такой пост:
 
                             %s
-                            """.formatted(text));
+                            """.formatted(post.text()));
                 }
                 return AutoPostDecision.skipped(AutoPostDecisionType.SKIPPED_DRY_RUN, "Dry run mode");
             }
 
-            channelPostingService.postRaw(bot, text);
+            channelPostingService.postRaw(bot, post);
 
             Instant postedAt = Instant.now(clock);
             postStateStore.saveLastFingerprint(newFingerprint);

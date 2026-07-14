@@ -43,6 +43,16 @@ public final class KeyboardFactory {
                 .build();
     }
 
+    public static InlineKeyboardMarkup channelPost(String site, String channel, String bot, String donate) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(urlBtn("🚀 Полный список", site)),
+                        new InlineKeyboardRow(urlBtn("📢 Канал", channel), urlBtn("🤖 Нира", bot)),
+                        new InlineKeyboardRow(urlBtn("❤️ Поддержать проект", donate))
+                ))
+                .build();
+    }
+
     private static InlineKeyboardButton urlBtn(String text, String url) {
         return InlineKeyboardButton.builder().text(text).url(url).build();
     }

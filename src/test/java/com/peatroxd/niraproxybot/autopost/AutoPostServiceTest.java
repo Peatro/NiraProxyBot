@@ -3,6 +3,7 @@ package com.peatroxd.niraproxybot.autopost;
 import com.peatroxd.niraproxybot.bot.NiraBot;
 import com.peatroxd.niraproxybot.client.ProxyApiClient;
 import com.peatroxd.niraproxybot.dto.ProxyTelegramLinkDto;
+import com.peatroxd.niraproxybot.service.ChannelPost;
 import com.peatroxd.niraproxybot.service.ChannelPostFormatter;
 import com.peatroxd.niraproxybot.service.ChannelPostingService;
 import org.junit.jupiter.api.Test;
@@ -89,14 +90,15 @@ class AutoPostServiceTest {
                 new ProxyTelegramLinkDto("b", 443, "y", 120, "tg://proxy-2")
         );
         when(proxyApiClient.fetchBestLinks(3)).thenReturn(links);
-        when(formatter.format(links)).thenReturn("ready post");
+        ChannelPost post = new ChannelPost("ready post", null);
+        when(formatter.format(links)).thenReturn(post);
 
         AutoPostDecision decision = service.run(bot);
 
         assertThat(decision.type()).isEqualTo(AutoPostDecisionType.POSTED);
         assertThat(store.getLastFingerprint()).contains(fingerprintService.fingerprint(links));
         assertThat(store.getPostHistory()).containsExactly(Instant.parse("2026-04-15T12:00:00Z"));
-        verify(channelPostingService).postRaw(bot, "ready post");
+        verify(channelPostingService).postRaw(bot, post);
         verify(adminNotifyService).notify(eq(bot), contains("Пост опубликован"));
         verify(adminNotifyService, never()).notify(eq(bot), contains("[AUTOPOST ERROR]"));
     }

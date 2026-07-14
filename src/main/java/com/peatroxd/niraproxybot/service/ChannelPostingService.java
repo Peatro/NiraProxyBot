@@ -22,7 +22,7 @@ public class ChannelPostingService {
     private final ProxyApiClient proxyApiClient;
     private final ChannelPostFormatter formatter;
 
-    public String buildDraft(int limit) {
+    public ChannelPost buildDraft(int limit) {
         List<ProxyTelegramLinkDto> links = proxyApiClient.getBestLinks(limit);
         return formatter.format(links);
     }
@@ -31,14 +31,15 @@ public class ChannelPostingService {
         postRaw(bot, buildDraft(limit));
     }
 
-    public void postRaw(NiraBot bot, String text) throws TelegramApiException {
-        bot.execute(htmlMessage(channelChatId, text));
+    public void postRaw(NiraBot bot, ChannelPost post) throws TelegramApiException {
+        bot.execute(htmlMessage(channelChatId, post));
     }
 
-    public SendMessage htmlMessage(String chatId, String text) {
-        SendMessage message = new SendMessage(chatId, text);
+    public SendMessage htmlMessage(String chatId, ChannelPost post) {
+        SendMessage message = new SendMessage(chatId, post.text());
         message.setParseMode("HTML");
         message.setLinkPreviewOptions(LinkPreviewOptions.builder().isDisabled(true).build());
+        message.setReplyMarkup(post.keyboard());
         return message;
     }
 }
