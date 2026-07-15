@@ -21,6 +21,10 @@ class ChannelPostFormatterTest {
         return f;
     }
 
+    private static ProxyTelegramLinkDto link(String tgLink) {
+        return new ProxyTelegramLinkDto("s", 443, "sec", 200, tgLink);
+    }
+
     @Test
     void emptyListRendersFallbackWithKeyboard() {
         ChannelPost post = formatter.format(List.of());
@@ -29,35 +33,65 @@ class ChannelPostFormatterTest {
     }
 
     @Test
-    void proxyBlockCarriesQualityLatencyAndEscapedLink() {
+    void nonEmptyPostHasNoQualityLabelsOrMs() {
+        ChannelPost post = formatter.format(List.of(link("tg://proxy?a=1")));
+        assertThat(post.text())
+                .doesNotContain(" ms")
+                .doesNotContain("Отличный")
+                .doesNotContain("Хороший")
+                .doesNotContain("Медленный")
+                .doesNotContain("Неизвестно")
+                .doesNotContain("🟡")
+                .doesNotContain("🔴")
+                .doesNotContain("⚪")
+                .doesNotContain("⚡");
+        assertThat(post.keyboard().getKeyboard()).hasSize(3);
+    }
+
+    @Test
+    void singleProxyLayoutAndDeclension() {
+        ChannelPost post = formatter.format(List.of(link("tg://proxy?a=1&b=2")));
+        assertThat(post.text()).isEqualTo("""
+                🌸 Нира подобрала свежие MTProto-прокси.
+                Все проверены из России и работают прямо сейчас.
+
+                🟢 1 рабочий прокси · проверено только что
+
+                1. 🔗 <a href="tg://proxy?a=1&amp;b=2">Открыть в Telegram</a>
+
+                ↑ Сверху — самый быстрый на момент проверки.""");
+    }
+
+    @Test
+    void multipleProxiesAreNumberedInApiOrderTopFirst() {
         ChannelPost post = formatter.format(List.of(
-                new ProxyTelegramLinkDto("s", 443, "sec", 45, "tg://proxy?a=1&b=2")
+                link("tg://first"),
+                link("tg://second"),
+                link("tg://third")
         ));
         assertThat(post.text())
-                .startsWith("🌸 Нира подобрала свежие MTProto-прокси.")
-                .contains("🟢 Отличный")
-                .contains("⚡ 45 ms")
-                .contains("🔗 <a href=\"tg://proxy?a=1&amp;b=2\">Открыть в Telegram</a>");
+                .contains("🟢 3 рабочих прокси · проверено только что")
+                .contains("1. 🔗 <a href=\"tg://first\">Открыть в Telegram</a>")
+                .contains("2. 🔗 <a href=\"tg://second\">Открыть в Telegram</a>")
+                .contains("3. 🔗 <a href=\"tg://third\">Открыть в Telegram</a>");
+        // порядок сохранён: first раньше second раньше third
+        assertThat(post.text().indexOf("tg://first"))
+                .isLessThan(post.text().indexOf("tg://second"))
+                .isLessThan(post.text().indexOf("tg://third"));
     }
 
     @Test
-    void qualityThresholds() {
-        assertThat(quality(60)).isEqualTo("🟢 Отличный");
-        assertThat(quality(61)).isEqualTo("🟡 Хороший");
-        assertThat(quality(120)).isEqualTo("🟡 Хороший");
-        assertThat(quality(121)).isEqualTo("🔴 Медленный");
+    void declensionAcrossCounts() {
+        assertThat(workingWord(1)).isEqualTo("рабочий");
+        assertThat(workingWord(2)).isEqualTo("рабочих");
+        assertThat(workingWord(4)).isEqualTo("рабочих");
+        assertThat(workingWord(5)).isEqualTo("рабочих");
+        assertThat(workingWord(11)).isEqualTo("рабочих");
+        assertThat(workingWord(21)).isEqualTo("рабочий");
+        assertThat(workingWord(111)).isEqualTo("рабочих");
     }
 
-    @Test
-    void nullLatencyIsUnknownAndOmitsLatencyLine() {
-        ChannelPost post = formatter.format(List.of(
-                new ProxyTelegramLinkDto("s", 443, "sec", null, "tg://proxy")
-        ));
-        assertThat(post.text()).contains("⚪ Неизвестно");
-        assertThat(post.text()).doesNotContain("⚡");
-    }
-
-    private String quality(Integer latency) {
-        return (String) ReflectionTestUtils.invokeMethod(formatter, "quality", latency);
+    private String workingWord(int n) {
+        return (String) ReflectionTestUtils.invokeMethod(formatter, "workingWord", n);
     }
 }

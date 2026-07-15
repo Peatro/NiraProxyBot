@@ -9,9 +9,15 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
 public class ChannelPostFormatter {
+
+    // Верно только если пост уходит сразу после прогона планировщика. Если между
+    // проверкой и постингом появится лаг — заменить на «проверено сегодня» или
+    // убрать, оставив таймстамп самого сообщения Telegram.
+    private static final String FRESHNESS = "проверено только что";
 
     @Value("${app.site-url}")
     private String siteUrl;
@@ -26,6 +32,9 @@ public class ChannelPostFormatter {
     private String donateUrl;
 
     public ChannelPost format(List<ProxyTelegramLinkDto> links) {
+        // Порядок API сохраняется как есть: эндпоинт best-links уже ранжирует прокси
+        // на сервере по устойчивой метрике, latencyMs (одиночный volatile-замер) для
+        // сортировки не годится. Новый список — вход не мутируется.
         List<ProxyTelegramLinkDto> validLinks = links == null
                 ? List.of()
                 : links.stream()
@@ -40,39 +49,41 @@ public class ChannelPostFormatter {
                     Попробуйте немного позже — список регулярно обновляется.""", keyboard);
         }
 
-        String body = validLinks.stream()
-                .map(this::formatBlock)
-                .collect(Collectors.joining("\n\n"));
+        int count = validLinks.size();
+        String list = IntStream.range(0, count)
+                .mapToObj(i -> (i + 1) + ". 🔗 <a href=\""
+                        + escapeHtml(validLinks.get(i).tgLink().trim())
+                        + "\">Открыть в Telegram</a>")
+                .collect(Collectors.joining("\n"));
 
         String text = """
                 🌸 Нира подобрала свежие MTProto-прокси.
-                Все варианты уже проверены и готовы к подключению.
+                Все проверены из России и работают прямо сейчас.
 
-                %s""".formatted(body);
+                🟢 %s %s прокси · %s
+
+                %s
+
+                ↑ Сверху — самый быстрый на момент проверки.""".formatted(
+                escapeHtml(String.valueOf(count)),
+                workingWord(count),
+                FRESHNESS,
+                list
+        );
 
         return new ChannelPost(text, keyboard);
     }
 
-    private String formatBlock(ProxyTelegramLinkDto link) {
-        StringBuilder block = new StringBuilder(quality(link.latencyMs()));
-        if (link.latencyMs() != null) {
-            block.append("\n⚡ ").append(link.latencyMs()).append(" ms");
+    // Склонение «рабочий»: 1 рабочий · 2–4 рабочих · 5+ рабочих (с учётом 11–14).
+    // ponytail: формы «мало» и «много» для этого слова совпадают («рабочих»),
+    // поэтому веток две; если слово сменят на такое, где 2–4 и 5+ различаются
+    // (штука/штуки/штук), добавить отдельную ветку для 2–4.
+    private String workingWord(int n) {
+        int mod100 = n % 100;
+        if (n % 10 == 1 && mod100 != 11) {
+            return "рабочий";
         }
-        block.append("\n🔗 <a href=\"").append(escapeHtml(link.tgLink().trim())).append("\">Открыть в Telegram</a>");
-        return block.toString();
-    }
-
-    private String quality(Integer latency) {
-        if (latency == null) {
-            return "⚪ Неизвестно";
-        }
-        if (latency <= 60) {
-            return "🟢 Отличный";
-        }
-        if (latency <= 120) {
-            return "🟡 Хороший";
-        }
-        return "🔴 Медленный";
+        return "рабочих";
     }
 
     private String resolveBotUrl() {
