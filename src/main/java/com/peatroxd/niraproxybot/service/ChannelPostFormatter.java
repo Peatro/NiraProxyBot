@@ -1,13 +1,14 @@
 package com.peatroxd.niraproxybot.service;
 
+import com.peatroxd.niraproxybot.bot.factory.KeyboardFactory;
 import com.peatroxd.niraproxybot.dto.ProxyTelegramLinkDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Component
 public class ChannelPostFormatter {
@@ -21,48 +22,57 @@ public class ChannelPostFormatter {
     @Value("${telegram.bot.username}")
     private String botUsername;
 
-    public String format(List<ProxyTelegramLinkDto> links) {
+    @Value("${app.donate-url}")
+    private String donateUrl;
+
+    public ChannelPost format(List<ProxyTelegramLinkDto> links) {
         List<ProxyTelegramLinkDto> validLinks = links == null
                 ? List.of()
                 : links.stream()
                 .filter(link -> link != null && StringUtils.hasText(link.tgLink()))
                 .toList();
 
-        if (validLinks.isEmpty()) {
-            return """
-                    Нира обновила список, но сейчас нет свежих рабочих прокси.
+        InlineKeyboardMarkup keyboard = KeyboardFactory.channelPost(siteUrl, channelUrl, resolveBotUrl(), donateUrl);
 
-                    %s
-                    """.formatted(footer());
+        if (validLinks.isEmpty()) {
+            return new ChannelPost("""
+                    🌸 Нира проверила прокси, но сейчас свежих рабочих вариантов нет.
+                    Попробуйте немного позже — список регулярно обновляется.""", keyboard);
         }
 
-        String body = IntStream.range(0, validLinks.size())
-                .mapToObj(index -> formatLink(index + 1, validLinks.get(index)))
+        String body = validLinks.stream()
+                .map(this::formatBlock)
                 .collect(Collectors.joining("\n\n"));
 
-        return """
-                Нира отобрала свежие прокси для Telegram.
+        String text = """
+                🌸 Нира подобрала свежие MTProto-прокси.
+                Все варианты уже проверены и готовы к подключению.
 
-                %s
+                %s""".formatted(body);
 
-                %s
-                """.formatted(body, footer());
+        return new ChannelPost(text, keyboard);
     }
 
-    private String formatLink(int index, ProxyTelegramLinkDto link) {
-        String tgLink = link.tgLink().trim();
-        String latencySuffix = link.latencyMs() != null ? " • " + link.latencyMs() + " ms" : "";
-        return "%d. %s%s".formatted(index, escapeHtml(tgLink), latencySuffix);
+    private String formatBlock(ProxyTelegramLinkDto link) {
+        StringBuilder block = new StringBuilder(quality(link.latencyMs()));
+        if (link.latencyMs() != null) {
+            block.append("\n⚡ ").append(link.latencyMs()).append(" ms");
+        }
+        block.append("\n🔗 <a href=\"").append(escapeHtml(link.tgLink().trim())).append("\">Открыть в Telegram</a>");
+        return block.toString();
     }
 
-    private String footer() {
-        return """
-                <a href="%s">Полный список</a> | <a href="%s">Канал</a> | <a href="%s">Нира</a>
-                """.formatted(
-                escapeHtml(siteUrl),
-                escapeHtml(channelUrl),
-                escapeHtml(resolveBotUrl())
-        );
+    private String quality(Integer latency) {
+        if (latency == null) {
+            return "⚪ Неизвестно";
+        }
+        if (latency <= 60) {
+            return "🟢 Отличный";
+        }
+        if (latency <= 120) {
+            return "🟡 Хороший";
+        }
+        return "🔴 Медленный";
     }
 
     private String resolveBotUrl() {

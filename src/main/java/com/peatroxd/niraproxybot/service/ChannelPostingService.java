@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.LinkPreviewOptions;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class ChannelPostingService {
     private final ProxyApiClient proxyApiClient;
     private final ChannelPostFormatter formatter;
 
-    public String buildDraft(int limit) {
+    public ChannelPost buildDraft(int limit) {
         List<ProxyTelegramLinkDto> links = proxyApiClient.getBestLinks(limit);
         return formatter.format(links);
     }
@@ -30,14 +31,15 @@ public class ChannelPostingService {
         postRaw(bot, buildDraft(limit));
     }
 
-    public void postRaw(NiraBot bot, String text) throws TelegramApiException {
-        bot.execute(htmlMessage(channelChatId, text));
+    public void postRaw(NiraBot bot, ChannelPost post) throws TelegramApiException {
+        bot.execute(htmlMessage(channelChatId, post));
     }
 
-    public SendMessage htmlMessage(String chatId, String text) {
-        SendMessage message = new SendMessage(chatId, text);
+    public SendMessage htmlMessage(String chatId, ChannelPost post) {
+        SendMessage message = new SendMessage(chatId, post.text());
         message.setParseMode("HTML");
-        message.disableWebPagePreview();
+        message.setLinkPreviewOptions(LinkPreviewOptions.builder().isDisabled(true).build());
+        message.setReplyMarkup(post.keyboard());
         return message;
     }
 }

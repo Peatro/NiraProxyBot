@@ -7,6 +7,7 @@ import com.peatroxd.niraproxybot.client.ProxyApiClient;
 import com.peatroxd.niraproxybot.dto.ProxyTelegramLinkDto;
 import com.peatroxd.niraproxybot.enums.UserState;
 import com.peatroxd.niraproxybot.service.AdminAccessService;
+import com.peatroxd.niraproxybot.service.ChannelPost;
 import com.peatroxd.niraproxybot.service.ChannelPostingService;
 import com.peatroxd.niraproxybot.service.DraftStorage;
 import com.peatroxd.niraproxybot.service.SessionService;
@@ -74,7 +75,7 @@ public class CallbackHandler {
             return;
         }
 
-        String draft = draftStorage.get(userId);
+        ChannelPost draft = draftStorage.get(userId);
         if (draft == null) {
             send(bot, new SendMessage(chatId.toString(), "Черновик не найден. Создай новый через /draft_best."));
             return;
