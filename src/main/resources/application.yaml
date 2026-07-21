@@ -17,6 +17,11 @@ app:
   channel-url: https://t.me/mtproxycheck
   chat-url: https://t.me/mtproxycheck_chat
   proxy-api-url: ${PROXY_API_URL:https://mtproxycheck.ru/api/public/proxies/best-links}
+  health-api-url: ${HEALTH_API_URL:http://mtproxy-backend:8080/api/public/health-status}
+
+health:
+  enabled: ${HEALTH_ENABLED:true}
+  check-cron: ${HEALTH_CHECK_CRON:0 */5 * * * *}
 
 autopost:
   enabled: true
