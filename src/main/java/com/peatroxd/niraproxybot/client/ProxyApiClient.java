@@ -2,6 +2,7 @@ package com.peatroxd.niraproxybot.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.peatroxd.niraproxybot.dto.HealthStatusDto;
 import com.peatroxd.niraproxybot.dto.ProxyTelegramLinkDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,9 @@ public class ProxyApiClient {
 
     @Value("${app.proxy-api-url}")
     private String apiUrl;
+
+    @Value("${app.health-api-url}")
+    private String healthApiUrl;
 
     public List<ProxyTelegramLinkDto> getBestLinks(int limit) {
         try {
@@ -55,5 +59,23 @@ public class ProxyApiClient {
 
         List<ProxyTelegramLinkDto> links = MAPPER.readValue(body, LIST_TYPE);
         return links == null ? List.of() : links;
+    }
+
+    public HealthStatusDto fetchHealthStatus() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(healthApiUrl))
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IllegalStateException("Health API status " + response.statusCode());
+            }
+            return MAPPER.readValue(response.body(), HealthStatusDto.class);
+        } catch (Exception e) {
+            log.error("Failed to fetch health status from {}", healthApiUrl, e);
+            return null;   // null = не смогли проверить; трактуем осторожно (см. scheduler)
+        }
     }
 }
